@@ -10,21 +10,14 @@ MODDIR=${0%/*}
 
 # 配置参数
 CONFIG_FILE="$MODDIR/config.conf"
-LOG_FILE="$MODDIR/monitor.log"
+LOG_FILE="$MODDIR/logs.log"
 
 CHECK_INTERVAL=60  # 检查间隔（秒）
-TEMP_THRESHOLD=80  # 温度阈值（摄氏度）
-CPU_THRESHOLD=90   # CPU使用率阈值（百分比）
-OVERLOAD_TIME=300  # 高负载持续时间阈值（秒）
 
-# 初始化配置
-init_config() {
-    if [ ! -f "$CONFIG_FILE" ]; then
-        echo "TEMP_THRESHOLD=$TEMP_THRESHOLD" > "$CONFIG_FILE"
-        echo "CPU_THRESHOLD=$CPU_THRESHOLD" >> "$CONFIG_FILE"
-        echo "OVERLOAD_TIME=$OVERLOAD_TIME" >> "$CONFIG_FILE"
-    fi
-}
+Temperature_Threshold=45  # 温度阈值（摄氏度）
+Cpu_Usage_Threshold=60   # CPU使用率阈值（百分比）
+
+Overload_Duration=300  # 高负载持续时间阈值（秒）
 
 # 读取配置
 load_config() {
@@ -48,10 +41,10 @@ log_message() {
 
 # 主循环
 main() {
-    init_config
     overload_start_time=0
     is_overload=0
 
+    echo ""
     while true; do
         load_config
         
@@ -72,6 +65,7 @@ main() {
             
             if [ "$overload_duration" -ge "$OVERLOAD_TIME" ]; then
                 log_message "System overload for too long, initiating reboot"
+                is_overload=0
                 reboot
             fi
         else

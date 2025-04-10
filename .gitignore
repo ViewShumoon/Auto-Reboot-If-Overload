@@ -1,1 +1,5 @@
 .history/
+src/webroot/.parcel-cache/
+src/webroot/dist/
+src/webroot/node_modules/
+src/webroot/yarn.lock
