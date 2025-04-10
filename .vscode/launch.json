@@ -6,30 +6,30 @@
 	"compounds": [
 		{
 			"name": "App Firefox",
-			"configurations": ["Launch Parcel", "Launch Firefox"]
+			"configurations": ["Launch Vite", "Launch Firefox"]
 		},
 		{
 			"name": "App Chrome",
-			"configurations": ["Launch Parcel", "Launch Chrome"]
+			"configurations": ["Launch Vite", "Launch Chrome"]
 		}
 	],
 	"configurations": [
 		{
 			"type": "node",
 			"request": "launch",
-			"name": "Launch Parcel",
-			"runtimeArgs": ["parcel", "index.html", "-p 9000"],
+			"name": "Launch Vite",
+			"runtimeArgs": ["vite", "dev"],
 			"runtimeExecutable": "yarn",
-			"cwd": "${workspaceFolder}/src/webroot/",
+			"cwd": "${workspaceFolder}/src/webroot-vue/",
 			"stopOnEntry": false,
-			"skipFiles": ["<node_internals>/**"]
+			"skipFiles": ["<node_internals>/**"] //"**/node_modules/**"
 		},
 		{
 			"type": "chrome",
 			"name": "Launch Chrome",
 			"request": "launch",
 			"url": "http://localhost:9000",
-			"webRoot": "${workspaceFolder}"
+			"webRoot": "${workspaceFolder}/src/webroot-vue/"
 		},
 		{
 			"type": "firefox",
@@ -37,7 +37,7 @@
 			"name": "Launch Firefox",
 			"url": "http://localhost:9000",
 			"profile": "dev",
-			"webRoot": "${workspaceFolder}",
+			"webRoot": "${workspaceFolder}/src/webroot-vue/",
 			"pathMappings": [
 				{
 					"url": "webpack:///src/",
