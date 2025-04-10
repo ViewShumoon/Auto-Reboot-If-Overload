@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统监控</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+    </style>
+</head>
+<body>
+    <h1>系统监控配置</h1>
+    
+    <div class="card">
+        <h2>当前状态</h2>
+        <div id="currentStatus">
+            <p>温度: <span id="currentTemp">--</span>°C</p>
+            <p>CPU使用率: <span id="currentCpu">--</span>%</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>配置参数</h2>
+        <form id="configForm">
+            <div class="form-group">
+                <label for="tempThreshold">温度阈值 (°C)</label>
+                <input type="number" id="tempThreshold" name="tempThreshold" min="0" max="100" required>
+            </div>
+            <div class="form-group">
+                <label for="cpuThreshold">CPU使用率阈值 (%)</label>
+                <input type="number" id="cpuThreshold" name="cpuThreshold" min="0" max="100" required>
+            </div>
+            <div class="form-group">
+                <label for="overloadTime">高负载持续时间 (秒)</label>
+                <input type="number" id="overloadTime" name="overloadTime" min="60" required>
+            </div>
+            <button type="submit">保存配置</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>日志</h2>
+        <div id="logContent" style="max-height: 200px; overflow-y: auto;">
+            <pre id="logText"></pre>
+        </div>
+    </div>
+
+    <script>
+        // 获取当前状态
+        function updateStatus() {
+            fetch('/api/status')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('currentTemp').textContent = data.temperature;
+                    document.getElementById('currentCpu').textContent = data.cpuUsage;
+                });
+        }
+
+        // 加载配置
+        function loadConfig() {
+            fetch('/api/config')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('tempThreshold').value = data.tempThreshold;
+                    document.getElementById('cpuThreshold').value = data.cpuThreshold;
+                    document.getElementById('overloadTime').value = data.overloadTime;
+                });
+        }
+
+        // 更新日志
+        function updateLog() {
+            fetch('/api/log')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('logText').textContent = data;
+                });
+        }
+
+        // 保存配置
+        document.getElementById('configForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = {
+                tempThreshold: document.getElementById('tempThreshold').value,
+                cpuThreshold: document.getElementById('cpuThreshold').value,
+                overloadTime: document.getElementById('overloadTime').value
+            };
+
+            fetch('/api/config', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('配置已保存');
+            })
+            .catch(error => {
+                alert('保存失败: ' + error);
+            });
+        });
+
+        // 定期更新数据
+        setInterval(updateStatus, 5000);
+        setInterval(updateLog, 10000);
+
+        // 初始加载
+        loadConfig();
+        updateStatus();
+        updateLog();
+    </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+id=k.auto-reboot-if-overload
+name=负载过高自动重启
+version=v0.1
+versionCode=2025041000
+author=Kiana
+description=监控设备温度和CPU使用率，在负载过高时自动重启设备

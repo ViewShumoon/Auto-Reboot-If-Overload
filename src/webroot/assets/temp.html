@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统监控</title>
+    <script src="https://cdn.jsdelivr.net/npm/@kernelsu/js-api"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+    </style>
+</head>
+<body>
+    <h1>系统监控配置</h1>
+    
+    <div class="card">
+        <h2>当前状态</h2>
+        <div id="currentStatus">
+            <p>温度: <span id="currentTemp">--</span>°C</p>
+            <p>CPU使用率: <span id="currentCpu">--</span>%</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>配置参数</h2>
+        <form id="configForm">
+            <div class="form-group">
+                <label for="tempThreshold">温度阈值 (°C)</label>
+                <input type="number" id="tempThreshold" name="tempThreshold" min="0" max="100" required>
+            </div>
+            <div class="form-group">
+                <label for="cpuThreshold">CPU使用率阈值 (%)</label>
+                <input type="number" id="cpuThreshold" name="cpuThreshold" min="0" max="100" required>
+            </div>
+            <div class="form-group">
+                <label for="overloadTime">高负载持续时间 (秒)</label>
+                <input type="number" id="overloadTime" name="overloadTime" min="60" required>
+            </div>
+            <button type="submit">保存配置</button>
+        </form>
+    </div>
+
+    <script>
+        const ksu = new KernelSU();
+        
+        // 获取当前状态
+        async function updateStatus() {
+            try {
+                const result = await ksu.execCommand('cat /sys/class/thermal/thermal_zone0/temp');
+                const temp = parseFloat(result) / 1000;
+                
+                const cpuResult = await ksu.execCommand('top -n 1 | grep "CPU:" | awk \'{print $2}\' | cut -d\'%\' -f1');
+                const cpu = parseFloat(cpuResult);
+                
+                document.getElementById('currentTemp').textContent = temp.toFixed(1);
+                document.getElementById('currentCpu').textContent = cpu.toFixed(1);
+            } catch (error) {
+                console.error('获取状态失败:', error);
+            }
+        }
+
+        // 加载配置
+        async function loadConfig() {
+            try {
+                const result = await ksu.execCommand('cat $MODPATH/config.conf');
+                const config = {};
+                result.split('\n').forEach(line => {
+                    const [key, value] = line.split('=');
+                    if (key && value) {
+                        config[key] = parseInt(value);
+                    }
+                });
+                
+                document.getElementById('tempThreshold').value = config.TEMP_THRESHOLD || 80;
+                document.getElementById('cpuThreshold').value = config.CPU_THRESHOLD || 90;
+                document.getElementById('overloadTime').value = config.OVERLOAD_TIME || 300;
+            } catch (error) {
+                console.error('加载配置失败:', error);
+            }
+        }
+
+        // 更新日志
+        async function updateLog() {
+            try {
+                const result = await ksu.execCommand('cat $MODPATH/monitor.log');
+                document.getElementById('logText').textContent = result;
+            } catch (error) {
+                console.error('读取日志失败:', error);
+            }
+        }
+
+        // 保存配置
+        document.getElementById('configForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = {
+                tempThreshold: document.getElementById('tempThreshold').value,
+                cpuThreshold: document.getElementById('cpuThreshold').value,
+                overloadTime: document.getElementById('overloadTime').value
+            };
+
+            try {
+                const configContent = `TEMP_THRESHOLD=${formData.tempThreshold}
+CPU_THRESHOLD=${formData.cpuThreshold}
+OVERLOAD_TIME=${formData.overloadTime}`;
+                
+                await ksu.execCommand(`echo '${configContent}' > $MODPATH/config.conf`);
+                alert('配置已保存');
+            } catch (error) {
+                alert('保存失败: ' + error);
+            }
+        });
+
+        // 定期更新数据
+        setInterval(updateStatus, 5000);
+        setInterval(updateLog, 10000);
+
+        // 初始加载
+        loadConfig();
+        updateStatus();
+        updateLog();
+    </script>
+</body>
+</html> 
