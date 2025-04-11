@@ -36,8 +36,7 @@ jobs:
       - name: Create Module Package
         run: |
           mkdir ./build
-          mkdir ./build/webroot
-          cp -r ./src/webroot/ ./build/webroot/
+          cp -r ./src/webroot/ ./build/
           cp ./src/config.conf ./build/
           cp ./src/module.prop ./build/
           cp ./src/service.sh ./build/
