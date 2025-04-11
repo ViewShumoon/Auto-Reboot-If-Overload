@@ -19,35 +19,33 @@ jobs:
           node-version: [22.x]
 
     steps:
-      - name: Pull source
+      - name: Clone code
         uses: actions/checkout@v4
-
-      - name: Go to /src/webroot-vue
-        run: cd ./src/webroot-vue
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-      
-      - name: Install dependencies
-        run: npm install
-        
-      - name: Build WebUI
-        run: npm vite build
+
+      - name: Install and Build WebUI
+        run: |
+            npm install
+            npm run build
+        working-directory: ./src/webroot-vue
         
       - name: Create Module Package
         run: |
-          cd ../../
+          mkdir ./build
+          mkdir ./build/webroot
           cp -r ./src/webroot/ ./build/webroot/
           cp ./src/config.conf ./build/
           cp ./src/module.prop ./build/
           cp ./src/service.sh ./build/
           cd build
-          zip -r ../$MODULE_NAME.zip ./*
+          zip -r ../${MODULE_NAME}.zip ./*
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: $MODULE_NAME
-          path: $MODULE_NAME.zip
+          name: artifact
+          path: ${{ env.MODULE_NAME }}.zip
