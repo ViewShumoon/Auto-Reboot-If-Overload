@@ -1,4 +1,18 @@
-import { exec } from 'kernelsu';
+import { exec, toast } from 'kernelsu';
+
+// Path
+const modulePath="/data/adb/modules/ka"
+const configPath=`${modulePath}/config.conf`
+
+
+async function executeCommand(cmd) {
+	const { errno, stdout, stderr } = await exec(cmd);
+	if (errno != 0) {
+		return undefined;
+	} else {
+		return stdout;
+	}
+}
 
 /**
  * 读取 $MODDIR/config.conf 配置文件
@@ -7,15 +21,19 @@ import { exec } from 'kernelsu';
 export async function loadAllConfig() {
   try {
     // 使用 cat 命令读取配置文件
-    const { errno, stdout, stderr } = await exec('cat $MODDIR/config.conf');
+    const allLines = await executeCommand(`cat ${config}/config.conf`);
     
-    if (errno !== 0) {
+    if (allLines == undefined) {
       console.error('读取配置文件失败:', stderr);
       throw new Error(`读取配置文件失败: ${stderr}`);
     }
     
     // 解析配置文件内容
-    const configLines = stdout.split('\n');
+    const configLines = stdout.split('\n').filter(line => line.includes('='));
+
+    // const mockData = "Check_Mode = 3\nCheck_Task_Corn = \"0 */2 0-5 * * *\"\nTemperature_Threshold = 45\nCpu_Usage_Threshold = 60\nOverload_Duration = 240\nMax_Reboot_Times = 2\n"
+    // const configLines = mockData.split('\n');
+        
     const config = {};
     
     for (const line of configLines) {
@@ -46,6 +64,7 @@ export async function loadAllConfig() {
     }
     
     return config;
+    
   } catch (error) {
     console.error('加载配置时出错:', error);
     throw error;
@@ -72,14 +91,15 @@ export async function saveAllConfig(config) {
     }
     
     // 使用 echo 和重定向将内容写入配置文件
-    const { errno, stderr } = await exec(`echo '${configContent}' > $MODDIR/config.conf`);
+    const allLines = await executeCommand(`echo '${configContent}' > ${configPath}`);
     
-    if (errno !== 0) {
+    if (allLines == undefined) {
       console.error('保存配置文件失败:', stderr);
       throw new Error(`保存配置文件失败: ${stderr}`);
     }
     
     return true;
+    
   } catch (error) {
     console.error('保存配置时出错:', error);
     throw error;

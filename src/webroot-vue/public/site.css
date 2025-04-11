@@ -19,7 +19,10 @@ body {
   -webkit-text-size-adjust: 100%;
   color: #fff;
 
+  --bs-body-color: #fff;
+  --bs-body-bg: #1e1e1e;
   --border-radius-m: 4px;
+  --bs-border-color: #495057;
 }
 
 #app {

@@ -8,9 +8,9 @@
     <div class="card">
       <h2>配置参数</h2>
       <form v-on:submit.prevent="handleSubmit">
-        <div class="form-group" v-for="item in configs">
-          <label :for="item.key">{{ item.label }}</label>
-          <input v-model="item.value" :id="item.key" :type="item.type" :min="item.min" :max="item.max" required>
+        <div v-for="item in configs" class="form-group">
+          <label :for="item.key" class="form-label">{{ item.label }}</label>
+          <input v-model="item.value" :id="item.key" :type="item.type" :min="item.min" :max="item.max" required class="form-control">
         </div>
 
         <button type="submit">保存配置</button>
@@ -59,7 +59,7 @@ const configs = ref([
     max: 3
   },
   {
-    key: "Check_Corn",
+    key: "Check_Task_Corn",
     label: "检查计划 (Cron表达式)",
     value: "0 */2 0-5 * * *",
     type: "text"
@@ -77,7 +77,7 @@ const configs = ref([
     label: "CPU使用率阈值 (%)",
     value: 60,
     type: "number",
-    min: 0,
+    min: 5,
     max: 100
   },
   {
@@ -86,7 +86,7 @@ const configs = ref([
     value: 240,
     type: "number",
     min: 60,
-    max: null
+    max: 65535
   },
   {
     key: "Max_Reboot_Times",
@@ -163,11 +163,6 @@ onMounted(() => {
   color: #dc3545;
 }
 
-.notification .icon {
-  margin-right: 10px;
-  font-weight: bold;
-}
-
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -191,23 +186,43 @@ onMounted(() => {
   margin-bottom: 1.5rem;
 }
 
-label {
+.form-label {
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 0.5rem;
   font-weight: bold;
 }
 
-input {
+
+.form-control {
+  display: block;
   width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--bs-body-color);
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: var(--bs-body-bg);
+  background-clip: padding-box;
+  border: 2px solid var(--bs-border-color);
   border-radius: var(--border-radius-m);
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: #86b7fe;
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
 
 button {
   background-color: #0d6efd;
   color: white;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 1.5rem;
   border: 1px solid transparent;
   border-radius: var(--border-radius-m);
   cursor: pointer;

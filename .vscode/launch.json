@@ -25,6 +25,16 @@
 			"skipFiles": ["<node_internals>/**"] //"**/node_modules/**"
 		},
 		{
+			"type": "node",
+			"request": "launch",
+			"name": "Build Vite",
+			"runtimeArgs": ["vite", "build"],
+			"runtimeExecutable": "yarn",
+			"cwd": "${workspaceFolder}/src/webroot-vue/",
+			"stopOnEntry": false,
+			"skipFiles": ["<node_internals>/**"] //"**/node_modules/**"
+		},
+		{
 			"type": "chrome",
 			"name": "Launch Chrome",
 			"request": "launch",

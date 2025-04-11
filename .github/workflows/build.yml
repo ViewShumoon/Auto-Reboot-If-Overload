@@ -1,0 +1,49 @@
+name: Build
+
+on:
+  push:
+    branches: [ release ]
+    tags: [ 'v*' ]
+
+env:
+  MODULE_NAME: auto-reboot-if-overload
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+      
+      - name: Install dependencies
+        run: yarn install
+        
+      - name: Build WebUI
+        run: yarn vite build
+        
+      - name: Create Module Package
+        run: |
+          cp -r src/* module/
+          cd module
+          zip -r ../$MODULE_NAME.zip ./*
+          cd ..
+          
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: $MODULE_NAME
+          path: $MODULE_NAME.zip
+          
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: $MODULE_NAME.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,4 +1,5 @@
-import path from "path";
+import { resolve } from 'path'
+
 import { defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
 import vueDevTools from "vite-plugin-vue-devtools";
@@ -16,16 +17,18 @@ export default defineConfig(({ mode }) => {
       vueDevTools()
     ],
     build: {
-      sourcemap: true,
+      sourcemap: false,
+      outDir: "../webroot",
+      emptyOutDir: true,
     },
     resolve: {
       alias: {
-        "@": resolve("./src"),
+        "@": resolvePath("./src"),
       },
     },
   };
 });
 
-function resolve(p) {
-  return path.resolve(__dirname, p);
+function resolvePath(p) {
+  return resolve(__dirname, p);
 }
